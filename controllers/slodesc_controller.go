@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -48,6 +49,12 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		return rst, err
 	}
+	latestMetric := slo.Status.Metrics[len(slo.Status.Metrics)-1]
+	inputrate := latestMetric.InputRate
+	meanlat := latestMetric.MeanLatency
+	taillat := latestMetric.TailLatency
+	stddev := latestMetric.StddevLatency
+	log.Printf("Input rate: %f Mean lat %f stddev %f Tail lat %f\n", inputrate, meanlat, stddev, taillat)
 
 	return ctrl.Result{}, nil
 }

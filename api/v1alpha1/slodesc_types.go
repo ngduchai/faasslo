@@ -64,8 +64,8 @@ type SLODescSpec struct {
 }
 
 type WorkflowStatus struct {
-	MeanLantecy   float64        `json:"meanlat"`
-	TailLantecy   float64        `json:"taillat"`
+	MeanLatency   float64        `json:"meanlat"`
+	TailLatency   float64        `json:"taillat"`
 	StddevLatency float64        `json:"stddevlat"`
 	InputRate     float64        `json:"inputrate"`
 	RunningPods   map[string]int `json:"runningpods"`
