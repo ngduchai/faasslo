@@ -54,7 +54,7 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	meanlat := latestMetric.MeanLatency
 	taillat := latestMetric.TailLatency
 	stddev := latestMetric.StddevLatency
-	log.Printf("Input rate: %f Mean lat %f stddev %f Tail lat %f\n", inputrate, meanlat, stddev, taillat)
+	log.Printf("Input rate: %d Mean lat %d stddev %d Tail lat %d\n", inputrate, meanlat, stddev, taillat)
 
 	return ctrl.Result{}, nil
 }

@@ -194,14 +194,14 @@ func (in *WorkflowStatus) DeepCopyInto(out *WorkflowStatus) {
 	*out = *in
 	if in.RunningPods != nil {
 		in, out := &in.RunningPods, &out.RunningPods
-		*out = make(map[string]int, len(*in))
+		*out = make(map[string]uint, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}
 	}
 	if in.DesiredPods != nil {
 		in, out := &in.DesiredPods, &out.DesiredPods
-		*out = make(map[string]int, len(*in))
+		*out = make(map[string]uint, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}
