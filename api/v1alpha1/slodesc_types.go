@@ -64,12 +64,12 @@ type SLODescSpec struct {
 }
 
 type WorkflowStatus struct {
-	MeanLatency   uint            `json:"meanlat"`
-	TailLatency   uint            `json:"taillat"`
-	StddevLatency uint            `json:"stddevlat"`
-	InputRate     uint            `json:"inputrate"`
-	RunningPods   map[string]uint `json:"runningpods"`
-	DesiredPods   map[string]uint `json:"desiredpods"`
+	MeanLatency   uint           `json:"meanlat"`
+	TailLatency   uint           `json:"taillat"`
+	StddevLatency uint           `json:"stddevlat"`
+	InputRate     uint           `json:"inputrate"`
+	RunningPods   map[string]int `json:"runningpods"`
+	DesiredPods   map[string]int `json:"desiredpods"`
 }
 
 // SLODescStatus defines the observed state of SLODesc
