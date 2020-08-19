@@ -2,7 +2,7 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/slo.ibm.com.slo.ibm.com_slodescs.yaml
+- bases/slo.ibm.com_slodescs.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

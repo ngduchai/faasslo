@@ -1,4 +1,4 @@
-apiVersion: slo.ibm.com.slo.ibm.com/v1alpha1
+apiVersion: slo.ibm.com/v1alpha1
 kind: SLODesc
 metadata:
   name: slodesc-sample

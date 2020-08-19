@@ -35,8 +35,8 @@ type SLODescReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=slo.ibm.com.slo.ibm.com,resources=slodescs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=slo.ibm.com.slo.ibm.com,resources=slodescs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=slo.ibm.com,resources=slodescs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=slo.ibm.com,resources=slodescs/status,verbs=get;update;patch
 
 func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -49,12 +49,17 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		return rst, err
 	}
-	latestMetric := slo.Status.Metrics[len(slo.Status.Metrics)-1]
-	inputrate := latestMetric.InputRate
-	meanlat := latestMetric.MeanLatency
-	taillat := latestMetric.TailLatency
-	stddev := latestMetric.StddevLatency
-	log.Printf("Input rate: %d Mean lat %d stddev %d Tail lat %d\n", inputrate, meanlat, stddev, taillat)
+	if len(slo.Status.Metrics) == 0 {
+		log.Printf("New SLODesc created, waiting for performance inputs")
+	} else {
+		latestMetric := slo.Status.Metrics[len(slo.Status.Metrics)-1]
+		inputrate := latestMetric.InputRate
+		meanlat := latestMetric.MeanLatency
+		taillat := latestMetric.TailLatency
+		stddev := latestMetric.StddevLatency
+		log.Printf("Input rate: %d Mean lat %d stddev %d Tail lat %d\n", inputrate, meanlat, stddev, taillat)
+
+	}
 
 	return ctrl.Result{}, nil
 }

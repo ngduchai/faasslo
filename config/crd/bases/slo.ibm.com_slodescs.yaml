@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: slodescs.slo.ibm.com.slo.ibm.com
+  name: slodescs.slo.ibm.com
 spec:
-  group: slo.ibm.com.slo.ibm.com
+  group: slo.ibm.com
   names:
     kind: SLODesc
     listKind: SLODescList
@@ -42,15 +42,17 @@ spec:
                 enable:
                   type: boolean
                 from:
+                  format: int64
                   type: integer
                 to:
+                  format: int64
                   type: integer
               required:
               - enable
               type: object
             ratelimit:
-              description: Foo is an example field of SLODesc. Edit SLODesc_types.go
-                to remove/update
+              description: The maximum supported input rate
+              format: int64
               type: integer
             shape:
               description: ShapeSLO describes parameters for shape SLO
@@ -58,12 +60,14 @@ spec:
                 enable:
                   type: boolean
                 stddev:
+                  format: int64
                   type: integer
               required:
               - enable
               - stddev
               type: object
             supportperiod:
+              format: int64
               type: integer
             tail:
               description: TailSLO describes parameters for tail SLO
@@ -71,8 +75,10 @@ spec:
                 enable:
                   type: boolean
                 latency:
+                  format: int64
                   type: integer
                 percentile:
+                  format: int64
                   type: integer
               required:
               - enable
@@ -99,6 +105,7 @@ spec:
           description: SLODescStatus defines the observed state of SLODesc
           properties:
             meancoldstart:
+              format: int64
               type: integer
             metrics:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
@@ -108,19 +115,25 @@ spec:
                 properties:
                   desiredpods:
                     additionalProperties:
+                      format: int64
                       type: integer
                     type: object
                   inputrate:
+                    format: int64
                     type: integer
                   meanlat:
+                    format: int64
                     type: integer
                   runningpods:
                     additionalProperties:
+                      format: int64
                       type: integer
                     type: object
                   stddevlat:
+                    format: int64
                     type: integer
                   taillat:
+                    format: int64
                     type: integer
                 required:
                 - desiredpods
@@ -132,8 +145,10 @@ spec:
                 type: object
               type: array
             stddevcoldstart:
+              format: int64
               type: integer
             tailcoldstart:
+              format: int64
               type: integer
           required:
           - meancoldstart

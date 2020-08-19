@@ -25,22 +25,22 @@ import (
 
 // TailSLO describes parameters for tail SLO
 type TailSLO struct {
-	Enable     bool `json:"enable"`
-	Percentile uint `json:"percentile,omitempty"`
-	Latency    uint `json:"latency"`
+	Enable     bool  `json:"enable"`
+	Percentile int64 `json:"percentile,omitempty"`
+	Latency    int64 `json:"latency"`
 }
 
 // MeanSLO describes parameters for mean SLO
 type MeanSLO struct {
-	Enable bool `json:"enable"`
-	From   uint `json:"from,omitempty"`
-	To     uint `json:"to,omitempty"`
+	Enable bool  `json:"enable"`
+	From   int64 `json:"from,omitempty"`
+	To     int64 `json:"to,omitempty"`
 }
 
 // ShapeSLO describes parameters for shape SLO
 type ShapeSLO struct {
-	Enable bool `json:"enable"`
-	Stddev uint `json:"stddev"`
+	Enable bool  `json:"enable"`
+	Stddev int64 `json:"stddev"`
 }
 
 // FaaSTopology describes workflow topology where we ask for the SLOs
@@ -54,22 +54,22 @@ type SLODescSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of SLODesc. Edit SLODesc_types.go to remove/update
-	RateLimit     uint         `json:"ratelimit,omitempty"`
+	// The maximum supported input rate
+	RateLimit     int64        `json:"ratelimit,omitempty"`
 	Tail          TailSLO      `json:"tail"`
 	Mean          MeanSLO      `json:"mean"`
 	Shape         ShapeSLO     `json:"shape"`
 	Workflow      FaaSTopology `json:"workflow,omitempty"`
-	SupportPeriod uint         `json:"supportperiod"`
+	SupportPeriod int64        `json:"supportperiod"`
 }
 
 type WorkflowStatus struct {
-	MeanLatency   uint           `json:"meanlat"`
-	TailLatency   uint           `json:"taillat"`
-	StddevLatency uint           `json:"stddevlat"`
-	InputRate     uint           `json:"inputrate"`
-	RunningPods   map[string]int `json:"runningpods"`
-	DesiredPods   map[string]int `json:"desiredpods"`
+	MeanLatency   int64            `json:"meanlat"`
+	TailLatency   int64            `json:"taillat"`
+	StddevLatency int64            `json:"stddevlat"`
+	InputRate     int64            `json:"inputrate"`
+	RunningPods   map[string]int64 `json:"runningpods"`
+	DesiredPods   map[string]int64 `json:"desiredpods"`
 }
 
 // SLODescStatus defines the observed state of SLODesc
@@ -77,9 +77,9 @@ type SLODescStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Metrics         []WorkflowStatus `json:"metrics"`
-	MeanColdStart   uint             `json:"meancoldstart"`
-	TailColdStart   uint             `json:"tailcoldstart"`
-	StddevColdStart uint             `json:"stddevcoldstart"`
+	MeanColdStart   int64            `json:"meancoldstart"`
+	TailColdStart   int64            `json:"tailcoldstart"`
+	StddevColdStart int64            `json:"stddevcoldstart"`
 }
 
 // +kubebuilder:object:root=true
