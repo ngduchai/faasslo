@@ -31,7 +31,7 @@ test: generate fmt vet manifests
 
 # Build manager binary
 manager: generate fmt vet
-	go build -o bin/manager main.go
+	go build -o bin/manager main.go 
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
@@ -61,6 +61,7 @@ fmt:
 # Run go vet against code
 vet:
 	go vet ./...
+	#cp go.mod2 go.mod
 
 # Generate code
 generate: controller-gen

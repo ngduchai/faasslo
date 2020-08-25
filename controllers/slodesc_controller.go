@@ -21,7 +21,10 @@ import (
 	"log"
 
 	"github.com/go-logr/logr"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+	knativeclient "knative.dev/serving/pkg/client/clientset/versioned"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -57,14 +60,71 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		meanlat := latestMetric.MeanLatency
 		taillat := latestMetric.TailLatency
 		stddev := latestMetric.StddevLatency
+
 		log.Printf("Input rate: %d Mean lat %d stddev %d Tail lat %d\n", inputrate, meanlat, stddev, taillat)
+
+		expected_inputrate := slo.Spec.RateLimit
+		expected_taillat := slo.Spec.Tail.Latency
+
+		if inputrate < expected_inputrate && inputrate > 0 {
+			opts := metav1.GetOptions{}
+			// Load related functions
+			for _, serviceName := range slo.Spec.Workflow.Tasks {
+				service, err := kc.ServingV1().ServicesGetter.Services("kcontainer").Get(serviceName, opts)
+				if err != nil {
+					log.Printf("Unable to get service %s", serviceName)
+				} else {
+					reservation := 1
+					if reservation, ok := service.Annotations["autoscaling.knative.dev/minScale"]; ok {
+						if tailat > expected_taillat {
+							reservation *= 2
+						} else {
+							if reservation > 0 {
+								reservation--
+							}
+						}
+					}
+					service.Annotations["autoscaling.knative.dev/minScale"] = reservation
+					log.Printf("Set reservation for %s to %d", serviceName, reservation)
+				}
+			}
+		}
 
 	}
 
 	return ctrl.Result{}, nil
 }
 
+// func newRestClient(cfg *rest.Config) (*rest.RESTClient, error) {
+// 	scheme := runtime.NewScheme()
+// 	SchemeBuilder := runtime.NewSchemeBuilder(knativescheme.AddKnownTypes)
+// 	if err := SchemeBuilder.AddToScheme(scheme); err != nil {
+// 		return nil, err
+// 	}
+// 	config := *cfg
+// 	config.GroupVersion = &SchemeGroupVersion
+// 	config.APIPath = "/apis"
+// 	config.ContentType = runtime.ContentTypeJSON
+// 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme)
+// 	client, err := rest.RESTClientFor(&config)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return client, nil
+// }
+
+var kc knativeclient.Clientset
+
 func (r *SLODescReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err.Error())
+	}
+	kc, err = knativeclient.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&sloibmcomv1alpha1.SLODesc{}).
