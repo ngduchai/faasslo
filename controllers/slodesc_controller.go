@@ -18,12 +18,16 @@ package controllers
 
 import (
 	"context"
+	"flag"
 	"log"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	knativeclient "knative.dev/serving/pkg/client/clientset/versioned"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,26 +70,56 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		expected_inputrate := slo.Spec.RateLimit
 		expected_taillat := slo.Spec.Tail.Latency
 
-		if inputrate < expected_inputrate && inputrate > 0 {
+		if inputrate < expected_inputrate {
 			opts := metav1.GetOptions{}
 			// Load related functions
+
+			// listops := metav1.ListOptions{}
+			// serviceList, err := kc.ServingV1().Services("kcontainer").List(listops)
+			// if err != nil {
+			// 	log.Printf("Unable to load services %s", err)
+			// } else {
+			// 	log.Print("Found service list")
+			// 	for _, service := range serviceList.Items {
+			// 		log.Printf("Service: %s", service.Name)
+			// 	}
+			// }
+
 			for _, serviceName := range slo.Spec.Workflow.Tasks {
-				service, err := kc.ServingV1().ServicesGetter.Services("kcontainer").Get(serviceName, opts)
+				if serviceName == "forward-1" {
+					continue
+				}
+				service, err := kc.ServingV1().Services("kcontainer").Get(serviceName, opts)
 				if err != nil {
-					log.Printf("Unable to get service %s", serviceName)
+					log.Printf("Unable to get service %s: %s", serviceName, err)
 				} else {
 					reservation := 1
-					if reservation, ok := service.Annotations["autoscaling.knative.dev/minScale"]; ok {
-						if tailat > expected_taillat {
-							reservation *= 2
-						} else {
-							if reservation > 0 {
-								reservation--
-							}
+					if podmin, ok := service.Spec.Template.Annotations["autoscaling.knative.dev/minScale"]; ok {
+						reservation, err = strconv.Atoi(podmin)
+						if err != nil {
+							log.Printf("Invalid minscale = %s (%s)", podmin, serviceName)
 						}
 					}
-					service.Annotations["autoscaling.knative.dev/minScale"] = reservation
-					log.Printf("Set reservation for %s to %d", serviceName, reservation)
+					if taillat > expected_taillat {
+						if reservation == 0 {
+							reservation = 1
+						} else {
+							reservation = reservation * 2
+						}
+						if reservation > 10 {
+							reservation = 10
+						}
+					} else {
+						if reservation > 0 {
+							reservation--
+						}
+					}
+					service.Spec.Template.Annotations["autoscaling.knative.dev/minScale"] = strconv.Itoa(reservation)
+					log.Printf("Tail lat = %d, Expected tail lat = %d, Set reservation for %s to %d", taillat, expected_taillat, serviceName, reservation)
+					_, err := kc.ServingV1().Services("kcontainer").Update(service)
+					if err != nil {
+						log.Printf("Unable to update service %s", err)
+					}
 				}
 			}
 		}
@@ -113,14 +147,18 @@ func (r *SLODescReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // 	return client, nil
 // }
 
-var kc knativeclient.Clientset
+var kc *knativeclient.Clientset
 
 func (r *SLODescReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
-	config, err := rest.InClusterConfig()
+	home := os.Getenv("HOME")
+	log.Printf("Load config from %s", home)
+	kubeconfig := flag.String("cmdconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	flag.Parse()
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
+
 	kc, err = knativeclient.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())

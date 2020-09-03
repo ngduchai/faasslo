@@ -56,6 +56,7 @@ type SLODescSpec struct {
 
 	// The maximum supported input rate
 	RateLimit     int64        `json:"ratelimit,omitempty"`
+	Rampup        int64        `json:"rampup"`
 	Tail          TailSLO      `json:"tail"`
 	Mean          MeanSLO      `json:"mean"`
 	Shape         ShapeSLO     `json:"shape"`
